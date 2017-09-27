@@ -243,3 +243,23 @@ def iterativeDeepeningSearch(startState, goalState, actionsF, takeActionF, maxDe
             return solutionPath
 
     return 'cutoff'
+
+
+def printPath_8p(solutionPath):
+    """
+    Prints solution path tailored for 8p puzzle, using generic square puzzle
+    :param solutionPath: Solution Path to display
+    :return: prints path.
+    """
+    printPath(solutionPath)
+
+
+def printPath(solutionPath):
+    """
+    Iterates through a solution and displays all states along the way.
+    :param solutionPath: list of lists of states.
+    :return: displays the path.
+    """
+    for result in solutionPath:
+        printState_8p(result)
+        print()
