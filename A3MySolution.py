@@ -2,6 +2,91 @@ import math
 import pandas as pd
 
 
+class Node:
+    def __init__(self, state, f=0, g=0, h=0):
+        self.state = state
+        self.f = f
+        self.g = g
+        self.h = h
+
+    def __repr__(self):
+        return "Node(" + repr(self.state) + ", f=" + repr(self.f) + \
+               ", g=" + repr(self.g) + ", h=" + repr(self.h) + ")"
+
+
+def aStarSearch(startState, actionsF, takeActionF, goalTestF, hF):
+    h = hF(startState)
+    startNode = Node(state=startState, f=0 + h, g=0, h=h)
+    return aStarSearchHelper(startNode, actionsF, takeActionF, goalTestF, hF, float('inf'))
+
+
+def aStarSearchHelper(parentNode, actionsF, takeActionF, goalTestF, hF, fmax):
+    if goalTestF(parentNode.state):
+        return ([parentNode.state], parentNode.g)
+    ## Construct list of children nodes with f, g, and h values
+    actions = actionsF(parentNode.state)
+    if not actions:
+        return ("failure", float('inf'))
+    children = []
+    for action in actions:
+        (childState, stepCost) = takeActionF(parentNode.state, action)
+        h = hF(childState)
+        g = parentNode.g + stepCost
+        f = max(h + g, parentNode.f)
+        childNode = Node(state=childState, f=f, g=g, h=h)
+        children.append(childNode)
+    while True:
+        # find best child
+        children.sort(key=lambda n: n.f)  # sort by f value
+        bestChild = children[0]
+        if bestChild.f > fmax:
+            return ("failure", bestChild.f)
+        # next lowest f value
+        alternativef = children[1].f if len(children) > 1 else float('inf')
+        # expand best child, reassign its f value to be returned value
+        result, bestChild.f = aStarSearchHelper(bestChild, actionsF, takeActionF, goalTestF,
+                                                hF, min(fmax, alternativef))
+        if result is not "failure":  # g
+            result.insert(0, parentNode.state)  # /
+            return (result, bestChild.f)  # d
+            #     / \
+
+
+if __name__ == "__main__":  # b   h
+    #   / \
+    successors = {'a': ['b', 'c'],  # a   e
+                  'b': ['d', 'e'],  # \
+                  'c': ['f'],  # c   i
+                  'd': ['g', 'h'],  # \ /
+                  'f': ['i', 'j']}  # f
+
+
+    def actionsF(s):  # \
+        try:  # j
+            ## step cost of each action is 1
+            return [(succ, 1) for succ in successors[s]]
+        except KeyError:
+            return []
+
+
+    def takeActionF(s, a):
+        return a
+
+
+    def goalTestF(s):
+        return s == goal
+
+
+    def h1(s):
+        return 0
+
+
+    start = 'a'
+    goal = 'h'
+    result = aStarSearch(start, actionsF, takeActionF, goalTestF, h1)
+    print('Path from a to h is', result[0], 'for a cost of', result[1])
+
+
 def printState(state):
     """
     Displays the current state of a list by squaring it, and displaying it nicely.
@@ -313,25 +398,60 @@ def ebf(nNodes, depth, precision=0.01):
 def estimateX(point, depth):
     return (1 - point ** (depth + 1)) / (1 - point)
 
+def h1_8p(state, goal):
+    return 0
+
+def h2_8p(state, goal):
+    statePos = findBlank(state)
+    goalPos = findBlank(goal)
+    return abs(statePos[0] - goalPos[0]) + abs(statePos[1] - goalPos[1])
+
+
+def h3_8p(state, goal):
+    return h2_8p(state, goal)
+
+
+def goaltest_8p(state, goal):
+    return state == goal
+
+
 def runIDSTest():
     global globalDepth
     globalDepth = 0
     global globalNodes
     globalNodes = 0
 
-    solutionPath1 = iterativeDeepeningSearch(startState, goalState1, actionsF_8p, takeActionF, 10)
+    idsSolutionPath1 = iterativeDeepeningSearch(startState, goalState1, actionsF_8p, takeActionF, 10)
     idsDepth1 = globalDepth
     idsNodes1 = globalNodes
 
     globalNodes = 0
-    solutionPath2 = iterativeDeepeningSearch(startState, goalState2, actionsF_8p, takeActionF, 10)
+    idsSolutionPath2 = iterativeDeepeningSearch(startState, goalState2, actionsF_8p, takeActionF, 10)
     idsDepth2 = globalDepth
     idsNodes2 = globalNodes
 
     globalNodes = 0
-    solutionPath3 = iterativeDeepeningSearch(startState, goalState3, actionsF_8p, takeActionF, 15)
+    idsSolutionPath3 = iterativeDeepeningSearch(startState, goalState3, actionsF_8p, takeActionF, 15)
     idsDepth3 = globalDepth
     idsNodes3 = globalNodes
+
+    globalNodes = 0
+    astarsolutionpath1 = aStarSearch(startState, actionsF_8p, takeActionF, lambda s: goaltest_8p(s, goalState1),
+                                     lambda s: h1_8p(s, goalState1))
+    astarDepth1 = globalDepth
+    astarNodes1 = globalNodes
+
+    globalNodes = 0
+    astarsolutionpath1 = aStarSearch(startState, actionsF_8p, takeActionF, lambda s: goaltest_8p(s, goalState1),
+                                     lambda s: h2_8p(s, goalState1))
+    astarDepth2 = globalDepth
+    astarNodes2 = globalNodes
+
+    globalNodes = 0
+    astarsolutionpath1 = aStarSearch(startState, actionsF_8p, takeActionF, lambda s: goaltest_8p(s, goalState1),
+                                     lambda s: h3_8p(s, goalState1))
+    astarDepth3 = globalDepth
+    astarNodes3 = globalNodes
 
     print("{!s:^40}{!s:^40}{!s:^40}".format(goalState1, goalState2, goalState3))
 
