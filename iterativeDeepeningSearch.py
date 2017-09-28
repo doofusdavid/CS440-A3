@@ -229,6 +229,7 @@ def iterativeDeepeningSearch(startState, goalState, actionsF, takeActionF, maxDe
     :param maxDepth: Maximum depth for this search.  Search can return earlier, but not later than this depth.
     :return:
     """
+
     solutionPath = []
     solutionPath.append(startState)
 
