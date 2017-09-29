@@ -114,17 +114,21 @@ def printState_8p(state):
     return printState(state)
 
 
+def findNumberLocation_8p(number, state):
+    index = state.index(number)
+    sqrt = 3
+
+    position = int(index / sqrt), index % sqrt
+    return position
+
+
 def findBlank(state):
     """
     Finds location of 0 in puzzle
     :param state: current state of the puzzle
     :return: coordinates of 0
     """
-    index = state.index(0)
-    sqrt = squareOfState(state)
-
-    position = int(index / sqrt), index % sqrt
-    return position
+    return findNumberLocation_8p(0, state)
 
 
 def findBlank_8p(state):
@@ -407,8 +411,18 @@ def h2_8p(state, goal):
     return abs(statePos[0] - goalPos[0]) + abs(statePos[1] - goalPos[1])
 
 
+def manhattanDistance(number, state, goal):
+    statePos = findNumberLocation_8p(number, state)
+    goalPos = findNumberLocation_8p(number, goal)
+    return abs(statePos[0] - goalPos[0]) + abs(statePos[1] - goalPos[1])
+
+
 def h3_8p(state, goal):
-    return h2_8p(state, goal)
+    value = 0
+    for i in range(9):
+        value += manhattanDistance(i, state, goal)
+
+    return value
 
 
 def goaltest_8p(state, goal):
